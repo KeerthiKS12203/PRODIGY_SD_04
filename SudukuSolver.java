@@ -1,0 +1,106 @@
+package coder;
+
+import java.util.Scanner;
+
+public class SudukuSolver {
+
+    private static final int SIZE = 9;
+
+    public static void main(String[] args) {
+        int[][] puzzle = readSudokuFromUser();
+
+        System.out.println("Original Sudoku Puzzle:");
+        printSudoku(puzzle);
+
+        SudukuSolver solver = new SudukuSolver();
+        if (solver.solveSudoku(puzzle)) {
+            System.out.println("\nSudoku Solved:");
+            printSudoku(puzzle);
+        } else {
+            System.out.println("No solution exists for the provided Sudoku puzzle.");
+        }
+    }
+
+    private static int[][] readSudokuFromUser() {
+        Scanner scanner = new Scanner(System.in);
+        int[][] puzzle = new int[SIZE][SIZE];
+
+        System.out.println("Enter the Sudoku puzzle (use '0' for empty cells):");
+
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                puzzle[i][j] = scanner.nextInt();
+            }
+        }
+
+        return puzzle;
+    }
+
+    public boolean solveSudoku(int[][] puzzle) {
+        int[] emptyCell = findEmptyCell(puzzle);
+
+        if (emptyCell == null) {
+            return true; // Puzzle solved
+        }
+
+        int row = emptyCell[0];
+        int col = emptyCell[1];
+
+        for (int num = 1; num <= SIZE; num++) {
+            if (isValidMove(puzzle, row, col, num)) {
+                puzzle[row][col] = num;
+
+                if (solveSudoku(puzzle)) {
+                    return true; // Continue solving
+                }
+
+                puzzle[row][col] = 0; // Backtrack if the current move doesn't lead to a solution
+            }
+        }
+
+        return false; // No solution found at this point
+    }
+
+    private int[] findEmptyCell(int[][] puzzle) {
+        for (int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                if (puzzle[row][col] == 0) {
+                    return new int[]{row, col};
+                }
+            }
+        }
+        return null; // Puzzle is already solved
+    }
+
+    private boolean isValidMove(int[][] puzzle, int row, int col, int num) {
+        // Check if 'num' is not in the same row and column
+        for (int i = 0; i < SIZE; i++) {
+            if (puzzle[row][i] == num || puzzle[i][col] == num) {
+                return false;
+            }
+        }
+
+        // Check if 'num' is not in the same 3x3 subgrid
+        int subgridRowStart = row - row % 3;
+        int subgridColStart = col - col % 3;
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (puzzle[subgridRowStart + i][subgridColStart + j] == num) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static void printSudoku(int[][] puzzle) {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                System.out.print(puzzle[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+}
